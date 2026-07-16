@@ -1,6 +1,8 @@
-# DESIGN v0.1 — verified real algebraic numbers for 2D CAD constraint satisfaction
+# DESIGN v0.2 — verified real algebraic numbers for 2D CAD constraint satisfaction
 
-*2026-07-16, Claude + Danielle. Status: proposed, not yet started.*
+*2026-07-16, Claude + Danielle. Status: M0 mostly landed (see board/); v0.2
+revises §6 (ordering: the model is the spec — Sturm demoted off the critical
+path) and adds §9.1 (the relative-ring crux). Task board = `board/`.*
 
 ## 0. Summary
 
@@ -141,13 +143,14 @@ Notes:
 - **Base field = ℚ** (arbitrary-precision rationals). Which rational to use
   under the Lean backend is an M0 groundwork question (§10).
 
-### 4.2 Well-formedness is decidable
+### 4.2 Well-formedness is checkable
 
-`Level` well-formedness — monic, squarefree (gcd(p, p′) constant), sign
-change across (lo, hi), exactly-one-root (Sturm variation count = 1) — is
-computed by the same recursion that computes signs (§6). The checker
-validates the tower itself before validating anything built on it. Nothing
-about the tower is trusted input.
+`Level` well-formedness — monic, squarefree (gcd(p, p′) constant with
+Bézout data), sign change across (lo, hi), exactly-one-root (v0.2: via a
+derivative-monotonicity certificate rather than Sturm counts — see §6) — is
+validated by the checker with certificate-supplied refinement fuel. The
+checker validates the tower itself before validating anything built on it.
+Nothing about the tower is trusted input.
 
 ## 5. Zero-testing without factoring: the D5 principle
 
@@ -189,66 +192,86 @@ it is the fiddliest single algorithm in the plan. M2's core task.
 Division/`recip` follows for free: the Bézout data from a successful
 nonzero-test *is* the inverse.
 
-## 6. Ordering: Sturm–Tarski sign as the spec, a small real model for its axioms
+## 6. Ordering: the model IS the spec (v0.2 revision)
 
 The hard-won lesson of the dts arc: ordering is the mountain
 (`dyn_tower_lemmas.rs` is 23k lines for degree 2). At degree 2 there is a
 closed form — sign(a + b√d) by case analysis on sign(a), sign(b),
 sign(a² − d·b²) — and that is what dts fought through. At general degree no
-closed form exists, so we need the systematic tool the closed form was a
-shadow of.
+closed form exists.
 
-**The spec-level sign function is a Sturm–Tarski query.** For f at level k
-with defining (p, lo, hi): the Tarski query TaQ(f, p; lo, hi) — computed
-from the signed remainder sequence of (p, p′·f), evaluating sign variations
-at lo and hi — equals the sign of f at the unique root of p in the interval.
-Every step of that computation is arithmetic and sign-testing in the
-coefficient field, i.e. level k−1, so by structural recursion **sign is a
-total computable spec function** on well-formed towers, bottoming out in ℚ.
-No limits, no fuel, no termination escrow. Well-formedness of levels (§4.2)
-is the same machinery pointed at (p, p′).
+**Key realization (v0.2):** Verus spec logic is classical, so the semantic
+model can simply *define* the order — no algebraic decision procedure is
+needed at the spec level at all, and Sturm's theorem (v0.1's biggest single
+proof) drops off the critical path entirely.
 
-The correctness obligations — sign is well-defined on eqv-classes, trichotomy
-against the D5 zero-test, sign(f·g) = sign(f)·sign(g), sign compatibility
-with addition — give the tower its `OrderedField` instance, and they are
-theorems *about Sturm queries*. The natural proofs go through a model in
-which p actually has a root:
+**M3a — the model.** Cauchy sequences of rationals with explicit moduli
+(`CReal`); arithmetic; order (classical: `pos(x)` = exists ε>0 and N with
+x_n ≥ ε beyond N — not decidable, and it doesn't need to be); an
+ordered-ring lemma kit; polynomial-evaluation homomorphism lemmas; root
+existence in a sign-change interval by bisection (test points are rational,
+so the classical argument is untroubled); and monotone-uniqueness (a
+polynomial with sign-constant derivative on an interval has at most one
+root there). Each wf level's root is then a spec-level object:
+`α := choose|x: CReal| p(x) = 0 && lo < x < hi`, and each tower gets an
+evaluation homomorphism `eval: TowerElem → CReal` by structural recursion.
 
-**M3a — a minimal constructive-real model over ℚ.** Cauchy sequences of
-rationals with explicit moduli; arithmetic; sign-with-witness; polynomial
-evaluation continuity; and root existence by sign-change bisection. The
-usual constructive-IVT delicacy (undecidable signs at test points) does not
-bite here: our test points are rational and coefficient signs are decidable
-by the induction hypothesis, so bisection is fully decidable at every step
-(a zero at a rational midpoint just means we found the root exactly). This
-is a bounded, textbook chunk — not a full real-analysis library, just enough
-to give each tower an evaluation map into "honest numbers".
+**The spec-level order:** `sign(f) := the sign of eval(f)` — the honest
+definition ("the order of the actual real root"), total as a spec function,
+noncomputable, which is fine: spec fns don't run.
 
-**M3b — Sturm machinery.** Signed remainder sequences, sign-variation
-counts, the Sturm–Tarski theorem relating TaQ to the sign at the root, root
-counting for the exactly-one-root wf condition.
+**M3b — checker-side sign computation, fuel from the certificate.** The
+checker computes signs by interval refinement: recursive interval
+enclosures of tower elements (a level's α is enclosed by its interval,
+refined by bisection whose endpoint sign queries recurse one level down;
+polynomial values by interval Horner), refined for **d steps where d is
+supplied by the certificate** — the untrusted solver knows the numbers, so
+it hands over the fuel. Only the soundness direction is verified (model
+value lies in the enclosure; enclosure excluding 0 fixes the sign). Exact
+zeros are D5's job, never refinement's. This machinery is *shared with the
+§7 fast path* — it is the fast path, with D5 as the exact fallback.
 
-**M3c — the `OrderedField` instance**, by induction on tower height, using
-M3a's model to interpret M3b's statements.
+**M3c — the welding lemmas + OrderedField.** D5 certificates translate into
+model facts through the evaluation homomorphism:
+- Bézout `u·f + v·p ≡ 1` (peqv, checkable) evaluated at α gives
+  `u(α)·f(α) = 1` since `p(α) = 0`, hence **f(α) ≠ 0** — zero-test
+  soundness, nonzero side.
+- `f ≡ w·g` (explicit-quotient divisibility, checkable) with α rooting g
+  gives **f(α) = 0** — zero side.
+So `eqv` (D5) matches model equality, trichotomy welds, and the
+`OrderedField` axioms are inherited from CReal's ordered-ring lemma kit
+via the homomorphism — no Sturm-query algebra anywhere.
 
-Prior art says this shape is formalizable: Cyril Cohen's real-closure
-construction in Coq/math-comp, Wenda Li's Sturm theory in Isabelle, the
-algorithmic backbone in Basu–Pollack–Roy ch. 2. And the degree-2
-specialization of the Sturm query *is* the dts case analysis — so this is
-the direct generalization of a fight already won once, with better tools:
-the Lean backend handles recursive induction and ring identities natively
-(recursive-induction discharge solved 2026-07-15, probe32 idioms), where Z3
-needed trigger surgery and context-pollution workarounds for every lemma.
+**Well-formedness (§4.2, revised):** a wf level certificate =
+endpoint-sign-change of p (endpoint values are level-(k−1) elements; signs
+recurse) + squarefreeness (gcd(p, p′) constant with Bézout — which also
+gives p′(α) ≠ 0 at any root by the same Bézout-at-α argument) + a
+**monotonicity certificate**: p′ has constant sign on the interval,
+witnessed by interval evaluation with certificate fuel. Monotone + sign
+change = exactly one root (M3a's uniqueness lemma). Monotonicity is not a
+completeness loss: around a simple root p′ is nonzero and continuous, so
+the solver can always shrink the interval until the certificate exists.
+
+Uniqueness genuinely matters (not just hygiene): with multiple roots in the
+interval, `choose` still picks a consistent α, but the checker's refinement
+could isolate a *different* root and compute the wrong sign — the fast-path
+soundness lemma needs the interval to pin α.
 
 Alternatives considered and set aside:
-- *Interval-refinement sign as primary spec* — refinement is only
-  semi-decidable at zero, so sign is not a total function without the D5
-  test woven in, and well-definedness ("refinement terminates when f ≠ 0")
-  already requires the model. Sturm gives totality for free.
+- *Sturm–Tarski query as the spec-level sign* (v0.1's route) — total and
+  purely algebraic, but it puts Sturm's theorem (the program's biggest
+  single proof: BPR ch. 2, root-crossing analysis, proven against the model
+  anyway) on the critical path, and its machinery is not shared with
+  anything else. Kept as a documented fallback if the enclosure route hits
+  an unexpected wall; also a fine later addition for a solver-independent
+  wf checker. Prior art if revived: Wenda Li (Isabelle), Cohen (math-comp).
+- *Interval-refinement sign as primary spec* — not total at zeros;
+  well-definedness already needs the model. Subsumed: the model is now the
+  spec and refinement is only the computation.
 - *dts-style closed-form case analysis* — does not exist at degree > 2.
-- *Fuel-indexed sign predicates* (the `dts_nonneg_fuel` pattern) — worked at
-  degree 2, but fuel-threading across towers and eqv was a large share of
-  the 23k-line pain; a total function avoids the whole genre.
+- *Fuel-indexed sign predicates* (the `dts_nonneg_fuel` pattern) — the fuel
+  now lives in the *certificate*, where it is data, not proof burden; the
+  23k-line fuel-threading genre is avoided.
 
 ## 7. Fast path: interval filtering, soundness-only
 
@@ -261,6 +284,11 @@ Plan: evaluate sign queries first with verified interval arithmetic
 rounds. The only verified statement needed is the trivial direction: *if the
 evaluated interval excludes 0, the sign is as computed*. If inconclusive,
 fall back to the exact path (§5/§6), which is complete on its own.
+
+v0.2 note: this is no longer a separate subsystem — §6's M3b enclosure
+machinery *is* this fast path (one build, two roles), and the "bounded
+number of rounds" is fuel carried in the certificate rather than a
+heuristic the checker owns.
 
 Deliberately **not** verifying separation bounds (BFMSS/Davenport–Mahler):
 because the exact path is a complete decision procedure, separation bounds
@@ -318,6 +346,41 @@ becomes one untrusted planner among several (the special case where every
 cluster is a single point placed by two loci, degree ≤ 2 per level). Port it
 later, unverified or lightly verified, as a certificate producer.
 
+### 9.1 The relative-ring crux (v0.2 — the honest asterisk on "ports unchanged")
+
+The trait ladder's methods are *absolute*: `zero()`/`one()` are static, and
+`eqv`/`mul`-with-reduction for tower elements need the tower — but the tower
+is **runtime certificate data**, so there is no honest type to instantiate
+`T: OrderedField` with. This is not hypothetical: it is exactly why the dts
+crate's Ring/Field impls were removed (`dyn_tower.rs`'s header comment —
+the planned `WellFormedDTS<W>` wrapper with `same_radicand` preconditions
+is this same crux at degree 2). Routes:
+
+- **(η) Relativize the constraint layer** — baseline, known-viable. Keep the
+  generic layer as-is (it still serves Rational and any true instance), and
+  produce a mechanically-derived tower-relative copy:
+  `constraint_satisfied_rel(tower, c, coords)` with ops
+  `tadd(tower, a, b)`, `teqv(tower, a, b)`, ... and wf preconditions. The 26
+  constraint bodies and the small geometry cone relativize mechanically
+  (this workspace has done far larger parallel typed-copies —
+  the pred-Britton copy). Checker theorem targets the relative predicate; a
+  bridging lemma equates the two on any genuine instance.
+- **(δ) Compatibility-guarded trait ladder** — a parallel `RelRing`/…/
+  `RelOrderedField` ladder whose axioms carry `compatible(a, b)`
+  preconditions (elements carry their tower; compatible = same tower). More
+  principled, heavier: every generic geometry lemma consumed must be
+  re-proven against the guarded axioms. Consider only if (η)'s duplication
+  becomes painful.
+- **(γ) Tower-merging total instance** — make ops total by merging
+  mismatched towers deterministically. Worked through and rejected: the
+  order-compatibility axioms (`le_add_monotone`) fail for mismatched-tower
+  junk elements; making them hold needs real tower compositum, the
+  exponential thing this design exists to avoid.
+
+Decision: start (η) at cad-04/cad-11 time; it also keeps the checker's
+statement concrete (a plain predicate over certificate data, no typeclass
+indirection in the trusted statement — arguably a trust *improvement*).
+
 ## 10. Milestones
 
 Each milestone gates on `./check.sh` = 0 errors (crate-local, Lean backend,
@@ -348,11 +411,14 @@ tactus-group-theory conventions: `-V cache`, tee to log).
   inverses; field ops gated on nonzero certificates. The splitting-threaded
   PRS is the fiddly core (§5).
   *Gate: zero-test sound and complete against eqv; div/recip specs.*
-- **M3 — ordering (the mountain).** M3a mini Cauchy model → M3b Sturm
-  machinery → M3c `OrderedField` instance (§6). Expect this to be the long
-  arc; expect it to be much shorter than dts's 23k lines per unit of
-  generality, and revisit the route if M3b suggests a cheaper path.
-  *Gate: OrderedField axioms for the tower.*
+- **M3 — ordering (the mountain, v0.2 route).** M3a Cauchy model (classical,
+  with root-existence and monotone-uniqueness) → M3b interval-enclosure
+  machinery with certificate fuel (shared with M5's fast path) → M3c
+  welding lemmas (Bézout-at-α) + `OrderedField` axioms via the evaluation
+  homomorphism (§6). Sturm is off the critical path (documented fallback).
+  Still the long arc; expect it to be much shorter than dts's 23k lines per
+  unit of generality.
+  *Gate: OrderedField axioms for the tower (relative form per §9.1).*
 - **M4 — equality-fragment checker** (needs only M2, can run parallel to
   M3). Port entities/constraints; certificate type; verified checking of
   all equality constraints end-to-end.

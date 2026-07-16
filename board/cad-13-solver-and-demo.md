@@ -20,11 +20,24 @@ the end-to-end moment:
   planner supply it symbolically — minimal-poly recognition via LLL is
   optional polish, NOT required for the demo).
 - Exec-vs-ghost decision comes due here (DESIGN §12 Q3): the checker so far
-  is ghost. Either (a) exec-mirror the checker (runtime Rational = port of
-  verus-rational's runtime layer or fresh BigInt-backed exec type — real
-  work), or (b) keep the checker ghost and have the demo drive it via proof
-  fns over concrete ghost data (cheaper, weaker demo). Talk to Danielle
-  before sinking effort — this is her call on what the artifact should BE.
+  is ghost. Cost sketch (2026-07-16):
+  (a) **exec mirror** — runtime BigInt-backed Rational (port
+      verus-rational's runtime layer or fresh over verus-bigint-style
+      limbs), exec Seq-ops (Vec mirrors), exec TowerElem + normalize +
+      D5 + enclosures, each with `ensures result == spec_op(...)`
+      invariants. Substantial: comparable to the whole ghost layer again,
+      but mechanical; yields a real runnable `check(cert) -> bool`.
+  (b) **ghost-only demo** — demo certificates are ghost constants; "running
+      the checker" = the verification run itself discharging
+      `check_certificate(sketch, cert)` as a proof obligation. Nearly free;
+      the artifact is a theorem instance, not a program.
+  (c) middle: exec only the HOT leaf (Rational arithmetic + interval
+      refinement) and keep tower plumbing ghost — probably a false economy;
+      the plumbing is where exec ergonomics bite anyway.
+  Recommend (b) for the first demo (it proves the architecture end-to-end),
+  then (a) as its own follow-on card when the artifact should become a
+  usable library. Talk to Danielle before sinking effort — this is her
+  call on what the artifact should BE.
 - Demo: three mutually tangent circles (coupled cluster, genuinely
   quadratic-tower-escaping variants exist; the classic Descartes-circle
   configuration is a good spicy target) + one symmetric/degenerate variant

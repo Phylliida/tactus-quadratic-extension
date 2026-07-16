@@ -1,51 +1,60 @@
 ---
-title: "M3b Sturm machinery: signed remainder sequences, variation counts, Sturm–Tarski"
+title: "M3b interval-enclosure machinery + wf-by-monotonicity (Sturm demoted, v0.2)"
 status: todo
 claimed_by:
 created: 2026-07-16T22:30:00Z
-updated: 2026-07-16T22:30:00Z
+updated: 2026-07-16T23:10:00Z
 ---
 
 ## Description
 
-The algebraic half of the ordering mountain (DESIGN.md §6). Over a generic
-ordered coefficient field (sign-decidable — instantiated at Rational first,
-then at towers-with-signs as cad-09 climbs):
+**v0.2 rewrite** (was: Sturm machinery — see DESIGN §6 and the fallback note
+below). The checker-side computation layer for signs and level
+well-formedness, with only soundness-direction proofs:
 
-1. **Signed remainder sequence** SRemS(p, q): p, q, −rem(p, q), ... (divmod
-   exists; needs trim between steps; termination by degree).
-2. **Sign variation count** Var(S; x): signs of the sequence evaluated at a
-   rational point, zeros dropped, count sign changes. (Polynomial evaluation
-   at a point: add `peval` to the tactus-algebra poly layer if cad-07
-   hasn't already — it's ~20 lines with a congruence lemma.)
-3. **Sturm's theorem**: for squarefree p, Var(SRemS(p, p′); lo) −
-   Var(SRemS(p, p′); hi) = number of roots of p in (lo, hi]. This is the
-   biggest single proof in the program. Textbook route (BPR ch. 2):
-   induction on the interval refinement / root-crossing analysis — in OUR
-   setting, prove it AGAINST THE CAUCHY MODEL (cad-07): "number of roots"
-   means the model's roots, sign behavior near a root comes from the model's
-   continuity lemmas. Do not attempt a model-free syntactic proof.
-4. **Sturm–Tarski / Tarski query**: TaQ(f, p; lo, hi) via SRemS(p, p′·f)
-   computes Σ_{roots α of p in (lo,hi)} sign(f(α)). With the exactly-one-root
-   wf condition, this IS sign(f(α)) — the total, computable spec-level sign
-   function the whole design rests on.
-5. **Level well-formedness becomes checkable**: monic + squarefree
-   (gcd(p, p′) constant, cad-02/03) + Var-difference = 1 (exactly one root
-   in the interval).
+1. **peval**: polynomial evaluation at a point, in tactus-algebra's poly
+   layer (~20 lines + congruence + homomorphism lemmas: peval of padd/pmul
+   is add/mul of pevals — the mul case is the one real induction, reusing
+   the push-decomposition toolkit).
+2. **Rational interval type** (lo, hi as Rational, lo ≤ hi) + interval
+   add/neg/mul/scale with the containment soundness lemmas (model value in
+   → result in). Port shapes from `verus-interval-arithmetic` where useful;
+   the soundness lemmas are small over the Rational OrderedField instance.
+3. **Interval Horner**: enclosure of p(x) from an enclosure of x and
+   enclosures of p's coefficients; soundness by induction via (2).
+4. **Recursive enclosure of tower elements**: level k's α is enclosed by its
+   interval; a level-k element (poly in α with level-(k−1) coefficients)
+   is enclosed via (3) with coefficient enclosures by recursion. Refinement:
+   bisect α's interval, decide the surviving half by the sign of p at the
+   rational midpoint — that sign is a level-(k−1) element's sign, which the
+   checker gets by *this same machinery one level down* (plus D5 for exact
+   zeros: p(mid) ≡ 0 means the midpoint is the root exactly — handle that
+   branch). **Fuel for all refinement comes from the certificate** — no
+   termination proof anywhere, just "run d steps, check the enclosure
+   excludes 0".
+   Soundness invariant (proven against the cad-07 model): the model root
+   stays inside the maintained interval through every bisection step.
+5. **Level wf checking** (DESIGN §4.2 v0.2): monic; squarefree = gcd(p, p′)
+   constant with Bézout data (cad-02/03); endpoint sign change (endpoint
+   values are level-(k−1) elements — recurse); **monotonicity certificate**:
+   enclosure of p′ over the whole interval (interval-in-interval Horner)
+   excludes 0. Soundness target: wf ⟹ the model has exactly one root in the
+   interval (cad-07's IVT + monotone-uniqueness).
 
-Sizing honestly: this is the card most likely to take multiple sessions and
-to spawn sub-cards (root-counting lemmas, sign-of-polynomial-near-endpoint
-lemmas, multiplicity handling). Prior art to consult for proof structure (not
-code): Wenda Li's Isabelle Sturm development, Cyril Cohen's math-comp real
-closure, BPR ch. 2. The degree-2 sanity check: the Sturm query at x²−d over
-(0, d+1) should reproduce the dts closed-form case analysis.
+**Done when:** items 1–5 verified (soundness direction only), 0 errors,
+committed. Smoke: certify wf of the ℚ(√2) level (x²−2 over (1, 2), p′ = 2x
+enclosed positive) and compute sign(√2 − 7/5) = + with explicit fuel.
 
-**Done when:** items 1–5 verified over Rational coefficients, 0 errors,
-committed. (Generic-over-tower instantiation is cad-09's job.)
+**Sturm fallback (parked):** if this route hits a wall, v0.1's plan was
+sign-as-Sturm–Tarski-query (signed remainder sequences over divmod+trim,
+variation counts, Sturm's theorem proven against the model; Wenda Li's
+Isabelle development and BPR ch. 2 as guides; the degree-2 query reproduces
+the dts case analysis). Also a fine *later* addition: it gives a
+solver-independent wf checker (no fuel needed). Tracked in cad-14.
 
-**Blocked by:** cad-02 (SRemS needs divmod+trim — already available — and
-benefits from cad-01/02 being settled). cad-07 strongly recommended first or
-concurrent (item 3 proves against the model).
+**Blocked by:** cad-02 (gcd for squarefree checks), cad-04 (tower types).
+cad-07 for the soundness statements (can build computation first, prove
+against the model as cad-07 lands).
 
 ## Progress
 
