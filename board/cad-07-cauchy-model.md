@@ -77,4 +77,16 @@ composes in cad-09.
 
 ## Progress
 
+- (2026-07-16T23:50Z) **Derisking probe PASSED first-try**
+  (`src/probe_creal.rs`, throwaway): ghost struct with
+  `spec_fn(nat) -> Rational` field + spec-closure construction
+  (`CReal { at: |n: nat| ... }`) both fine under tactus; Bishop-regularity
+  as a two-variable quantified predicate with a named-accessor trigger
+  (`cr_at`) states and proves cleanly (constant sequence proven regular,
+  end-to-end through Rational cross-mult arithmetic); pointwise cr_add
+  closure plumbing verified. The representation-mechanics risk is retired —
+  what remains for this card is honest math work (triangle-inequality kit,
+  bisection, monotone-uniqueness via the (x−y)·q(x,y) identity), not
+  encoding risk.
+
 ## Writeup

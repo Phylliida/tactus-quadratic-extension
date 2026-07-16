@@ -66,4 +66,15 @@ that gap is D5's whole job, cad-05) and any ordering (cad-08/09).
 
 ## Progress
 
+- (2026-07-16T23:45Z) **Derisking probe PASSED** (`src/probe_tower.rs`,
+  throwaway): (1) `ghost enum TowerElem { Base(Rational),
+  Poly(Seq<TowerElem>) }` accepted; (2) recursive spec fn `te_eqv` with
+  `decreases a` and the recursive call *under a forall* on `xs[i]` —
+  container-decreases through Seq works; (3) nested-induction proof fn
+  (`te_eqv_refl`, recursive call inside assert-forall) discharges under the
+  Lean backend; (4) cross-crate generic instantiation of the poly layer at
+  T = Rational works including `divmod` (with its requires). Only hiccup:
+  concrete-literal eqv facts (3·1 ≠ 0·1) need explicit unfolding asserts.
+  The card's core bets are confirmed; no Box-list fallback needed.
+
 ## Writeup
