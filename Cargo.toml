@@ -1,0 +1,15 @@
+[package]
+name = "tactus-quadratic-extension"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+vstd = { path = "../tactus/source/vstd" }
+# Imported via verus --import/--extern (see check.sh), not through cargo.
+tactus-algebra = { path = "../tactus-algebra" }
+
+[package.metadata.verus]
+verify = true
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(verus_keep_ghost)'] }

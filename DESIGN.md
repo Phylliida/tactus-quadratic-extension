@@ -330,6 +330,16 @@ tactus-group-theory conventions: `-V cache`, tee to log).
   over a generic field — add/mul/divmod, gcd with Bézout data, squarefree
   part, evaluation — with the standard lemma set.
   *Gate: division/Bézout/squarefree postconditions proven.*
+
+  *Status 2026-07-16: groundwork DONE except the polynomial module.
+  Trait layer = new `tactus-algebra` crate (Danielle's call): ported
+  verus-algebra ladder verbatim (30 fns, falsification-probed) + fresh
+  Rational OrderedField instance (74 fns, ~530 lines vs ~3k Z3-era —
+  key idiom: `by (nonlinear_arith)` blocks see only their `requires`,
+  so every axiom carries its closed-form facts explicitly; oversized
+  identities decompose into int-atom helper lemmas). Cross-crate
+  import validated end-to-end via `build-export.sh` (.vir/.rlib) +
+  `--import/--extern` in this crate's check.sh; see src/probe.rs.*
 - **M1 — tower core.** `Tower`/`Level`/`TowerElem` + wf predicates;
   quotient-ring ops (add/mul/neg/normalize mod defining); `Ring` instance by
   induction on height.
@@ -375,14 +385,15 @@ checking) before any ordering theory lands — a real intermediate summit.
 
 ## 12. Open questions (for Danielle)
 
-1. **Trait layer** (M0): try `verus-algebra` under the Lean backend first,
-   or start with a fresh minimal tactus-native trait file? (Affects how
-   verbatim the geometry/constraint port can be.)
-2. **Crate name**: the design outgrew "quadratic" — rename to something like
-   `tactus-real-algebraic` / `tactus-cad`, or keep the name and let it grow?
+1. ~~**Trait layer** (M0)~~ — *answered 2026-07-16: new `tactus-algebra`
+   crate with the ported ladder + fresh Rational; Mathlib enters through
+   Lean-side tactics, not type reuse.*
+2. ~~**Crate name**~~ — *answered 2026-07-16: keep the name, let it grow;
+   easy to rename later.*
 3. **Ghost-first vs exec-first**: old crate is almost all
    `#[cfg(verus_keep_ghost)]` with a thin runtime. Same here (ghost checker
-   first, exec mirror later), or exec from the start?
+   first, exec mirror later), or exec from the start? (Currently
+   proceeding ghost-first.)
 4. **First demo scope**: which constraint subset should M4's demo sketch
    exercise?
 
