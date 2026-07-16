@@ -19,7 +19,16 @@ have a single pointer to what exists and how it was built.
 
 ## Writeup
 
-**What exists (all verified under `./check.sh`, Lean backend, 0 errors):**
+**Gate correction (2026-07-16, evening — read cad-15 before trusting "Lean
+backend" claims below):** the day's runs used check.sh files carrying
+`--emit-lean` (skips Lean; floor-only) — and even without it, plain
+`--lean-backend` verifies ordinary proof fns with Z3. So "verified" below
+means **Z3-verified** (sound, falsification-probed), and full-Lean discharge
+is blocked on tactus lean-all-proofs user-trait support (B6; see
+tactus/BUG-lean-all-proofs-user-traits.md). The proof-authoring idioms below
+remain valid — they are backend-portable inline proofs by design.
+
+**What exists (all verified under `./check.sh`, 0 errors):**
 
 In `../../tactus-algebra`:
 - `src/traits/` — the verus-algebra ladder ported verbatim: `Equivalence` →

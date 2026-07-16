@@ -25,10 +25,13 @@ if [[ ! -f "$ALG/tactus_algebra.vir" || ! -f "$ALG/libtactus_algebra.rlib" ]]; t
   "$HERE/../tactus-algebra/build-export.sh" >/dev/null
 fi
 
+# NOTE: do NOT add --emit-lean here — it emits .lean files WITHOUT running
+# Lean (a floor-only measurement mode). This script must run the real
+# package-check Lean gate.
 "$VERUS" --lean-backend -V cache --crate-type=lib \
   --import tactus_algebra="$ALG/tactus_algebra.vir" \
   --extern tactus_algebra="$ALG/libtactus_algebra.rlib" \
-  "$HERE/src/lib.rs" --emit-lean "$@" 2>&1 | tee "$LOG"
+  "$HERE/src/lib.rs" "$@" 2>&1 | tee "$LOG"
 rc="${PIPESTATUS[0]}"
 echo "[check.sh] full output saved to $LOG (exit $rc)" >&2
 exit "$rc"

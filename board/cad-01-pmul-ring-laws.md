@@ -1,9 +1,9 @@
 ---
 title: "pmul ring laws: commutativity, distributivity, associativity, full congruence"
-status: todo
-claimed_by:
+status: done
+claimed_by: fable
 created: 2026-07-16T22:30:00Z
-updated: 2026-07-16T22:30:00Z
+updated: 2026-07-17T00:05:00Z
 ---
 
 ## Description
@@ -57,4 +57,36 @@ from cad-00's writeup.
 
 ## Progress
 
+- (2026-07-16) Landed in one session: lemmas.rs additions + poly_ring.rs,
+  two fix iterations from first draft (a stray `by{}` on a lemma call; a
+  refl ordered after its consumer; a missing `=~=` bridge for len-0 Seqs).
+
 ## Writeup
+
+All seven deliverables verified in `tactus-algebra/src/poly_ring.rs`
+(commit "cad-01: pmul ring laws complete"), gated at 0 errors — with the
+cad-15 caveat: the gate verifies proof fns via Z3 until tactus B6 lands.
+
+- T-kit additions (lemmas.rs): `lemma_add_regroup` (4-term),
+  `lemma_uniq_neg`, `lemma_neg_add`, `lemma_mul_neg_right`.
+- Pointwise stock: zpoly-to-peqv/zpoly-padd, pneg/scale congruences,
+  scale-over-padd/-scale/-one/-pneg/-shiftk, padd-pneg, padd-regroup,
+  `lemma_cons_as_padd` (head + shifted tail), shiftk-pneg swap,
+  inner-shift compose.
+- Structural minis: pmul-empty-right (zpoly), pmul-singleton-right
+  (= scale, via cons-as-padd — **this is where T-commutativity enters**,
+  exactly as predicted in the fleshing), pmul-shiftk-right,
+  pmul-shift1-left (definition unfold + zpoly absorb), pmul-scale-right.
+- Mains: cong-right (induction), left-distrib over padd/pneg/psub
+  (induction + regroup), **comm** (induction riding cons-as-padd +
+  singleton + shiftk-right — the push-mirror item 3 of the original plan
+  dissolved into these, as hoped), right-distrib over padd/psub (comm
+  conjugates), **assoc** (induction consuming right-distrib +
+  scale-right + shift1-left), cong-left/both (comm conjugates),
+  pmul-one-left.
+
+Notes for cad-02 (the consumer): everything Bézout needs is now present —
+distribution over psub both sides, assoc, cong both args, one-mul. The
+proof style throughout is eqv-chains with one `axiom_eqv_transitive` per
+link; ~950 lines total for the kit. No tactus_tactic anywhere (deprecation
+guidance) — all inline.
