@@ -25,14 +25,18 @@ may want anyway:
   threaded through the recursion (needs cad-01 laws; straightforward once
   uniqueness exists, or directly by witness-threading without uniqueness).
 - **squarefree-part is squarefree**: gcd(sqf, sqf′) is constant, char-0
-  argument. The deepest of the four; BPR ch. 10 / any algebra text. Needed
-  only if/when M3's model work wants "squarefree ⟹ simple roots ⟹ sign
-  changes isolate roots" — check cad-08's actual needs before investing;
-  it may pull this card into the critical path, in which case split it out.
+  argument. The deepest of the four; BPR ch. 10 / any algebra text.
+  v0.2 resolution of the open question: cad-08/09 do NOT need it — the wf
+  route uses gcd(p, p′)-constant + Bézout-at-α directly (p′(α) ≠ 0 without
+  any simple-roots theorem), so this stays parked for real.
+- **Sturm–Tarski machinery** (moved here from the v0.1 critical path):
+  signed remainder sequences, variation counts, Sturm's theorem against
+  the model, TaQ. Optional future value: a solver-independent wf checker
+  (no certificate fuel needed) and exact root counting. Revive only if the
+  enclosure route (cad-08) walls, or as polish.
 
 **Done when:** whichever pieces get built are verified and the rest are
-explicitly re-parked with a reason; revisit after cad-08 clarifies what M3
-consumes.
+explicitly re-parked with a reason.
 
 **Blocked by:** cad-01 (all items), cad-08 (to know what's actually needed).
 

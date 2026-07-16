@@ -19,10 +19,15 @@ The first real summit: a verified checker for the equality fragment
   `constraint_satisfied` bodies are polynomial identities in the
   coordinates — distance², perpendicular, collinear, midpoint, tangency,
   ...) and confirm zero via the D5 zero-test (cad-05/06).
-- The theorem: checker accepts ⟹ `constraint_satisfied` holds for every
-  equality constraint, with T = the tower field (cad-06 instance;
-  ordering-dependent constraints — arc membership, NotCoincident — excluded
-  from this card's fragment).
+- The theorem, in **relative form** (DESIGN §9.1 route η): checker accepts
+  ⟹ `constraint_satisfied_rel(tower, c, coords)` for every equality
+  constraint — where `constraint_satisfied_rel` is the mechanically
+  relativized copy of the generic predicate (ops → tower-relative ops with
+  wf preconditions). Budget the relativization pass of the 26 bodies + the
+  geometry cone into this card; it's parallel typed-copy work of a kind
+  this workspace has done at much larger scale. Ordering-dependent
+  constraints (arc membership, NotCoincident) stay excluded from this
+  card's fragment.
 - Hand-built demo certificate: the DESIGN gate sketch (unit square +
   diagonals + midpoint constraint, all-rational — depth-0 tower), then a
   depth-1 sketch that actually exercises √: e.g. a point constrained to

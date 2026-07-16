@@ -23,14 +23,21 @@ Proof strategy (all structural induction on the first argument, reusing
    distributivity), shiftk-padd, then a 4-term padd shuffle.
    Same statement for psub (or derive via pneg: pmul(p, pneg(q)) ≡
    pneg(pmul(p, q)), also by induction).
-3. **Mul-by-cons-from-the-right**: peqv(pmul(q, cons(h, t)), padd(scale(h, q),
-   shiftk(pmul(q, t), 1))) — the mirror of the definition, by induction on q.
-   (Note there is no `cons` on Seq; phrase via q.push or via
-   `shiftk(t,1)`/`padd(constant(h), shiftk(t,1))` decomposition of the second
-   argument — pick whichever induction goes through cleanest. The
-   push-decomposition mirror `pmul(q, p.push(c)) ≡ padd(pmul(q, p),
-   shiftk(scale(c, q), p.len()))` is the analogue matching our push-based
-   toolkit and is likely the right statement.)
+3. **Push-decomposition mirror** (worked out in detail 2026-07-16): prove
+   `pmul(q, p.push(c)) ≡ padd(pmul(q, p), shiftk(scale(c, q), p.len()))`
+   by induction on q, via two new helpers:
+   - `lemma_push_as_padd`: peqv(x.push(v), padd(x, shiftk(seq![v],
+     x.len()))) — pointwise, easy (i < len: x_i + 0; i = len: 0 + v).
+     Turns every push into padd + monomial, so the whole card runs on
+     padd/shiftk algebra.
+   - `lemma_pmul_monomial_right`: pmul(q, shiftk(seq![v], k)) ≡
+     shiftk(scale(v, q), k) — induction on q; NOTE the coefficient order
+     flips (q_i·v vs scale's v·q_i), so **this is where T-commutativity
+     enters the poly layer**. Also needs scale-over-push/scale-compose
+     pointwise facts (scale(h, p.push(c)) == scale(h,p).push(h·c) by Seq
+     ext).
+   Then (3) = second-arg congruence + left-distrib (item 2) + the monomial
+   lemma, assembled.
 4. **Commutativity**: peqv(pmul(p, q), pmul(q, p)). Induction on p using (3).
 5. **Right-distributivity**: comm ∘ left-distrib ∘ comm.
 6. **Associativity**: peqv(pmul(pmul(p, q), r), pmul(p, pmul(q, r))).

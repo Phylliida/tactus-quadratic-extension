@@ -14,6 +14,30 @@ analysis library — just enough to give each tower an evaluation map into
 model. Independent of everything else on the board — can start anytime, good
 parallel track.
 
+**v0.2 clarification — the model is CLASSICAL.** Verus spec logic is
+classical (and the Lean backend has Classical available), so nothing here
+needs to be constructive/decidable: `pos`/`le` on CReal are exists-witness
+predicates, trichotomy is a classical theorem, and the tower root is a
+spec-level `choose`. "Cauchy sequences" were chosen for *definability* (no
+built-in real type), not constructivism. This substantially softens v0.1's
+worries about constructive IVT. What the model must additionally provide
+for the v0.2 ordering route (DESIGN §6): **monotone-uniqueness** (a
+polynomial whose derivative has constant sign on an interval has at most
+one root there — needs a mean-value-flavored argument or a direct
+monotonicity-from-derivative-sign lemma for polynomials; plan the proof
+route early, it's the one real analysis lemma in the program) and the
+**derivative** of a polynomial as the algebraic pderiv (cad-03) linked to
+a difference-quotient bound (polynomial identity: p(x) − p(y) =
+(x − y)·q(x, y) with q explicit — provable by induction, no limits needed;
+monotonicity can be routed through this identity entirely, avoiding
+analysis: sign-constant q on the box ⟹ injective. Prefer this route).
+
+**Trigger risk to plan around:** CReal as a struct with a
+`spec_fn(nat) -> Rational` field runs into the workspace's known
+spec_fn-in-quantifier trigger pitfalls. Mitigation: wrap sequence access
+in a named spec fn (`cr_at(x, n)`) and quantify over that; or represent
+sequences as recursive spec fns where natural.
+
 Contents (probably its own module tree in tactus-algebra or a new
 tactus-reals crate — decide at start; leaning tactus-algebra module to avoid
 another export hop):

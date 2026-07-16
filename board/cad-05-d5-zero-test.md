@@ -33,6 +33,18 @@ needs signs, which don't exist until M3. Two ways to stage it:
   (b) Block on M3. Not recommended; M4 (equality checker) wants this card.
   Go with (a); revisit the interface when cad-09 lands.
 
+**Which gcd (v0.2 note):** with cad-04's free-ring instance, the *generic*
+`gcd<T: Field>` from cad-02 does not instantiate at TowerElem (no Field
+instance — the crux). Two routes, pick at build time:
+  (i) relativized Euclid — a tower-relative copy of cad-02's recursion using
+      relative field ops one level down (recip via the level-below D5
+      Bézout); the natural fit with the recursion below;
+  (ii) pseudo-division (subresultant-style, multiply through by leading
+      coefficients) staying entirely in Ring — keeps the generic layer,
+      but the Bézout certificate becomes u·f + v·p ≡ c·g with a scalar c
+      that must be nonzero-tested, shifting complexity into the welding.
+Leaning (i); note the choice in the writeup.
+
 **The recursion pit:** gcd over level-(k−1) coefficients needs leading-
 coefficient invertibility tests = level-(k−1) zero-tests = recursion down the
 tower, and any of those may themselves split lower levels, which REWRITES the

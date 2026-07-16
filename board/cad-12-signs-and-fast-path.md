@@ -14,15 +14,13 @@ Complete the constraint vocabulary (DESIGN.md §7–8):
   which side), checked by the verified sign function (cad-09). Wire the
   ordering-dependent constraints (ArcMembership, NotCoincident, and
   orient2d-based predicates) into the checker.
-- **Interval fast path**: adaptive-precision rational interval evaluation of
-  sign queries, refining a bounded number of rounds, with ONLY the
-  soundness direction verified ("evaluated interval excludes 0 ⟹ the sign
-  is as computed"); inconclusive falls back to the exact Sturm/D5 path,
-  which is complete on its own. Deliberately NO verified separation bounds
-  (DESIGN §7) — the give-up heuristic is untrusted tuning.
-  Port/adapt what's useful from `verus-interval-arithmetic` (Z3-era, ~193
-  fns) rather than reinventing; the soundness lemma is the only proof
-  obligation.
+- **Interval fast path (v0.2: mostly already built)**: under the v0.2
+  ordering route, cad-08's enclosure machinery with certificate-supplied
+  fuel IS the fast path — this card only wires branch-sign claims through
+  it (cad-09 item 5 is the soundness lemma) and adds the D5 fallback
+  dispatch for exact zeros. Deliberately NO verified separation bounds
+  (DESIGN §7) and no checker-owned termination story — refinement depth is
+  certificate data.
 
 **Done when:** full 26-constraint vocabulary checkable; fast path
 demonstrably taken on a non-degenerate demo (log/count which path fired) and
