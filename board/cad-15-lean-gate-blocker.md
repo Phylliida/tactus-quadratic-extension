@@ -67,5 +67,17 @@ gate definition), and check.sh files updated to make that the standing gate.
   (`e2631b2` DESIGN-N3, committed same day). Validated the N3
   recursive-unfold direction by hand: adding `eqv_spec, denom, denom_nat`
   to the failing simp set closes the goal (probe in session log).
+- (2026-07-19, N3-M1) First N3 milestone landed in tactus (`a2f70be`):
+  UnfoldOnce arm (form B — `rw [f]` one-step unfold when a goal's LHS
+  head is a recursive spec fn; detection sees through
+  SpanMark/TypeAnnot/nested-App + N1's let-eq wrapper; guard simp
+  excludes broadcast haves by name or ext_equal explodes the goal's
+  Seq equality) + two-phase form E arm (targeted unfold, then guarded
+  split — one arm, or `split` never sees the guards). tactus-algebra
+  **85 → 87 verified, 205 → 177 failing obligations**, no regressions;
+  rust_verify_test 138/140 (2 pre-existing state_machines failures,
+  stash-verified). Remaining = form C (eqv-chaining, M4), Rational
+  nonlinear (~16, own story), termination/bound-normalization (M2
+  scripts), and the N3-M0 census harness.
 
 ## Writeup
