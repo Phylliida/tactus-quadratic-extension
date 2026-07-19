@@ -79,5 +79,13 @@ gate definition), and check.sh files updated to make that the standing gate.
   stash-verified). Remaining = form C (eqv-chaining, M4), Rational
   nonlinear (~16, own story), termination/bound-normalization (M2
   scripts), and the N3-M0 census harness.
+- (2026-07-19, N3-M0) Provenance + census harness landed in tactus
+  (`9a88b6c`): `HypProvenance::Other` split into
+  Requires/HoistEq/CtorEq/LoopInv/AssertFact/AssumeFact; CallFact
+  carries the ensures shape summary (form D input); every emitted
+  theorem carries `-- tactus-closer: <class>` and the N4 summary line
+  prints at crate end (algebra: 806 formE / 28 formB+formE / 3 formB /
+  37 rung-only across 874 theorems). The M2 script IR now has its
+  substrate: typed frames + named hyps + the census ratchet.
 
 ## Writeup
