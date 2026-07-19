@@ -87,5 +87,16 @@ gate definition), and check.sh files updated to make that the standing gate.
   prints at crate end (algebra: 806 formE / 28 formB+formE / 3 formB /
   37 rung-only across 874 theorems). The M2 script IR now has its
   substrate: typed frames + named hyps + the census ratchet.
+- (2026-07-19, N3-M2) Script IR + author v1 landed in tactus
+  (`733546a`): scripts emitted primary (form A branch+woven-fact,
+  form B recursive-unfold) with the derived chain as fallback; script
+  census classes live. tactus-algebra **205 → 166 failing
+  obligations, 85 → 87 verified**. Key wins: GuardSimpStar `at *`
+  (fact hyps normalize each other's bounds — the ↑(len x)/↑1 case M1
+  couldn't reach); StructuralTail excludes ext_equal haves by local
+  name; `| done` terminates every close (rfl/omega error on zero
+  goals). Phantom audit: 27 direct-Mathlib files elaborate clean.
+  Remaining = form C (eqv chains — the bulk of what fails now),
+  Rational nonlinear (~16), termination obligations.
 
 ## Writeup
