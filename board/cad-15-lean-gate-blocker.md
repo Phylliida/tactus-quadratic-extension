@@ -50,5 +50,22 @@ gate definition), and check.sh files updated to make that the standing gate.
 - (2026-07-16) Diagnosed; BUG doc filed and committed in tactus (`6810558`);
   check.sh files fixed (--emit-lean removed); memory updated
   (emit-lean-skips-lean, no-tactus-tactic-in-new-code).
+- (2026-07-19) Re-measured post-B6-emission-closure (tactus `e3da0f9` +
+  `d8195ed` "force all lean" — plain `--lean-backend` now routes everything
+  to Lean, no separate flag): tactus-algebra **59 → 85 verified**. Landed
+  crate-side (`4fdb4f4` in tactus-algebra): check.sh exports LEAN_PATH
+  (Mathlib — `by (nonlinear_arith)` emits `import Mathlib.Tactic.Linarith`;
+  was an entire 27-fn error class, now 0); `OrderedRing.ge/gt` made required
+  methods (Lean emission mishandles trait defaults); Rational `eqv/le/lt`
+  inlined in impls; ordered lemma kit in lemmas.rs (also pulls
+  PartialOrder/OrderedRing classes into the defs umbrella — the
+  unknown-identifier class is now 0). New BUG doc filed in tactus
+  (`0d0f9b4`): default-method class/instance emission + impl-only class
+  walk-gap. **Remaining 205 errors are one family: the fixed closer script
+  (rfl/decide/omega + simp set) can't recursively unfold spec defs in goals
+  or apply dictionary axiom fields** — exactly tactus's N3 arc
+  (`e2631b2` DESIGN-N3, committed same day). Validated the N3
+  recursive-unfold direction by hand: adding `eqv_spec, denom, denom_nat`
+  to the failing simp set closes the goal (probe in session log).
 
 ## Writeup
