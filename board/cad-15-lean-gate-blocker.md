@@ -119,5 +119,13 @@ gate definition), and check.sh files updated to make that the standing gate.
   fully green**; tactus-algebra 157 → 139 errors, 85 → 91 verified.
   Remaining Rational: congruence classes needing cancel in more
   shapes, recip sign-splits, small den-equalities.
+- (2026-07-19, unfold closure unified) Structural rung + rung_tail
+  now route through goal_unfold_names' closure (`5f088f1`):
+  **91 → 98 verified, 139 → 102 errors**; lemma_add_parts,
+  lemma_denom_pos, lemma_eqv_zero_iff_num_zero, lemma_mul_parts
+  newly green (8 Rational impls fully green). Full plan for the
+  remaining 102: `docs/plan-remaining-green.md` (den-small/apply-
+  misfire, congruence cancel generalization, recip sign-splits,
+  form C+ for the pmul eqv-family).
 
 ## Writeup
