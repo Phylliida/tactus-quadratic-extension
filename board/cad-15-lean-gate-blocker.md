@@ -3,7 +3,7 @@ title: "full-Lean discharge of the trait corpus — blocked on tactus lean-all-p
 status: todo
 claimed_by:
 created: 2026-07-16T23:59:00Z
-updated: 2026-07-20T13:55:00Z
+updated: 2026-07-20T17:05:00Z
 ---
 
 ## Description
@@ -150,5 +150,25 @@ gate definition), and check.sh files updated to make that the standing gate.
   mul_distributes_left (2), recip sign-splits (5), pmul family
   (~60, the form C+ chain-author), 2 divmod whnf timeouts.
   N3 design doc lessons 13–17.
+- (2026-07-20 pm, certificate-computation arc) **107 → 112
+  verified, 86 → 76 errors.** Under the transparency/predictability
+  law (compute certificates, never menu for them): the rw-ladder's
+  capped monomial menu was REPLACED by the quotient derivation
+  (multiset-diff of the definition-folded goal's and kernel's
+  monomials — dc² falls out structurally); R3/R4 le-multipliers
+  (mul_le_mul_of_nonneg_right with shape-derived positivity proofs;
+  the two-sided complement rule + mul_le_mul_iff_left₀ cancel for
+  le_congruence); the partial hoist (Bool-lets as goal-position
+  residue lets — Prop equations stay out of the telescope, requires
+  arrive named; bails only on residue-name references);
+  denom-injectivity arm (`.den` equalities from `denom` equations,
+  targeted `simp only [denom, denom_nat] at ⊢ <names>; omega`).
+  Emission bugs fixed: by-haves swallowing `;`-chains
+  (`:= by tac;` → `(by tac)` — latent since R2's cancel branch) and
+  application-precedence on bare pp-atoms (`mul_self_nonneg (…)`).
+  GREEN newly: mul_congruence_left, le_add_monotone, le_congruence,
+  le_mul_nonneg_monotone, mul_distributes_left, add/mul_associative
+  (healed), recip_congruence down to 2. All 24 Rational impls green
+  except the recip sign-split trio. N3 design doc lessons 18–23.
 
 ## Writeup
