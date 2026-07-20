@@ -3,7 +3,7 @@ title: "full-Lean discharge of the trait corpus — blocked on tactus lean-all-p
 status: todo
 claimed_by:
 created: 2026-07-16T23:59:00Z
-updated: 2026-07-16T23:59:00Z
+updated: 2026-07-20T13:55:00Z
 ---
 
 ## Description
@@ -127,5 +127,28 @@ gate definition), and check.sh files updated to make that the standing gate.
   remaining 102: `docs/plan-remaining-green.md` (den-small/apply-
   misfire, congruence cancel generalization, recip sign-splits,
   form C+ for the pmul eqv-family).
+- (2026-07-20, congruence arc) **98 → 107 verified, 102 → 86
+  errors.** Four mechanisms, all in tactus: (1) eliminator
+  apply-guard (conclusion-LHS-head must match the goal's — the blind
+  `apply` misfire was masking every Rational failure); (2)
+  spec_fn_body_refs now closes through TRAIT IMPL bodies (simp's
+  projection unfolding strands `from_int_spec`); (3) form G —
+  goal-only collapse arm for trait-projection-headed goals
+  (maxRecDepth from let-wrapped antecedent rewrites; omega-only
+  terminator, nlinarith is not import-safe outside
+  by(nonlinear_arith) fns); (4) NONLIN-scope hoisting + the
+  rewrite-ladder (`rw` definition hyps into the goal, then
+  congrArg-multiply the kernel hyp by a denom monomial, squares
+  first — dc²). Surfaced + fixed two latent pool bugs: congrArg is
+  a type check (Rational-Eq hyps excluded via structural Int-side
+  check) and the multiplied have type needs parenthesized sides.
+  GREEN newly: den-small family complete (add_zero/mul_one/
+  mul_zero/add_inverse), one_ne_zero, div_is_mul_recip,
+  neg_congruence, sub_is_add_neg, add_congruence_left;
+  recip_congruence 5→4. Remaining: le_*/mul-congruence half of the
+  congruence family (needs num-atom monomials + inequality kernels),
+  mul_distributes_left (2), recip sign-splits (5), pmul family
+  (~60, the form C+ chain-author), 2 divmod whnf timeouts.
+  N3 design doc lessons 13–17.
 
 ## Writeup
