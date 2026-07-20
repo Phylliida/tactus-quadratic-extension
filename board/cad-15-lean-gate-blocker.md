@@ -98,5 +98,15 @@ gate definition), and check.sh files updated to make that the standing gate.
   goals). Phantom audit: 27 direct-Mathlib files elaborate clean.
   Remaining = form C (eqv chains — the bulk of what fails now),
   Rational nonlinear (~16), termination obligations.
+- (2026-07-19, form C / M4) Equivalence chaining landed in tactus
+  (`d5706f2`): the §11.2 bet paid off — the goal's spine IS the
+  user's proof trace, so ExactHyp after let/hoist substs closes the
+  eqv-chain preconditions AND postconditions; no axiom-field
+  instantiation needed in v1. tactus-algebra **166 → 157 failing
+  obligations**; 488/874 theorems (56%) now script-authored
+  (A:292 B:31 C:165). Remaining: Rational nonlinear (~16, needs
+  `ring`-class power), termination obligations, and the harder eqv
+  chains where the final fact is a 2-link transitivity away
+  (ApplyLemma on trans, not ExactHyp).
 
 ## Writeup
