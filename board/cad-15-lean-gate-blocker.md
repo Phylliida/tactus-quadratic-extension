@@ -108,5 +108,16 @@ gate definition), and check.sh files updated to make that the standing gate.
   `ring`-class power), termination obligations, and the harder eqv
   chains where the final fact is a 2-link transitivity away
   (ApplyLemma on trans, not ExactHyp).
+- (2026-07-19, the Rational story) R1 defeq-bridge + R2 nonlinear
+  ladder landed in tactus (`4f166a8`): `exact h` by defeq for
+  projection-vs-raw-form bridges; congrArg-multiplied-hyp pool
+  (beta-reduced types) + mul_eq_zero cancel for the equality chains;
+  transitive non-recursive unfold closure (denom→denom_nat); targeted
+  unfold `at ⊢ <mentioning hyps>` (never bare `at *` — whnf timeout
+  on divmod-sized contexts). **axiom_eqv_transitive,
+  axiom_le_transitive, axiom_add_associative, axiom_mul_associative
+  fully green**; tactus-algebra 157 → 139 errors, 85 → 91 verified.
+  Remaining Rational: congruence classes needing cancel in more
+  shapes, recip sign-splits, small den-equalities.
 
 ## Writeup
