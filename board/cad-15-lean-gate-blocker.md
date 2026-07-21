@@ -3,7 +3,7 @@ title: "full-Lean discharge of the trait corpus — blocked on tactus lean-all-p
 status: todo
 claimed_by:
 created: 2026-07-16T23:59:00Z
-updated: 2026-07-20T17:05:00Z
+updated: 2026-07-20T19:30:00Z
 ---
 
 ## Description
@@ -170,5 +170,24 @@ gate definition), and check.sh files updated to make that the standing gate.
   le_mul_nonneg_monotone, mul_distributes_left, add/mul_associative
   (healed), recip_congruence down to 2. All 24 Rational impls green
   except the recip sign-split trio. N3 design doc lessons 18–23.
+- (2026-07-20 eve, recip sign-split arc) **112 → 114 verified,
+  76 → 72 errors. Item 5 complete: all 24 Rational impls green.**
+  Mechanisms: False-elim arm in the kernel ladder (`cases h` on
+  `LitBool(false)` binders — `assert(false)` in a branch makes its
+  downstream obligations vacuous; recip_congruence's b.num == 0
+  leg) and the targeted ite-collapse leg (`simp_all only [if_pos,
+  if_neg, if_true, if_false] <;> omega` as BACKSTOP behind the wild
+  `simp_all`; recip's sign legs need the ite collapse AFTER `split`
+  peels the outer guard). Regression-chase lessons: `if_pos`/`if_neg`
+  in a spine set collapses the ites `split` needs; `ofNat_toNat`
+  rewrites subrange's forms out from under divmod's legs; the full
+  unfold set in a leg whnf-times-out; `+zetaDelta` on big contexts
+  is substitution blowup. Side-effects: pmul_pad −1,
+  pmul_singleton_right −1; pmul_push +1 is the 223:16 budget-edge
+  flake (byte-identical theorem, closes standalone). divmod (4) and
+  pmul_padd_right (4) unchanged, pre-existing. N3 lessons 25–28.
+  Also landed: infra review resolution — the R2 congrArg pool is
+  the workhorse (TACTUS_NONLIN_NO_POOL experiment: 132 obligations
+  depend on it), rule + caps now documented at emission site.
 
 ## Writeup
