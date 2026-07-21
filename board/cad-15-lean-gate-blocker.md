@@ -3,7 +3,7 @@ title: "full-Lean discharge of the trait corpus — blocked on tactus lean-all-p
 status: todo
 claimed_by:
 created: 2026-07-16T23:59:00Z
-updated: 2026-07-20T21:00:00Z
+updated: 2026-07-20T22:20:00Z
 ---
 
 ## Description
@@ -205,5 +205,18 @@ gate definition), and check.sh files updated to make that the standing gate.
   (`decreasing_by all_goals (simp_all; omega)` in to_lean_fn.rs,
   `simp [height] <;> omega` in link_discharge.rs) — a dedicated
   pass.
+- (2026-07-20 night, termination pass) The debt is PAID: every
+  termination arm is named now (TERM_SIMP_LEMMAS = LEG +
+  `Int.natCast_sub` — the `↑(n - m)` collapse divmod's
+  `toNat (n - len b)` termination needs). Covered: datatype-height
+  `simp_all`, WF-height `simp [height]`, the DecreasingKind ladder
+  family (SeqSubrange/SeqDropFirst/SeqDropLast/Div/Ladder + the
+  mono chain), and the mono-companion theorem. Probe t80: pmul's
+  full ladder elaborates with the wild arms replaced one-for-one.
+  e2e 138/140 (recursive-datatype gate; 2 pre-existing), algebra
+  114/72, lean_verify unit 407/407 (after a resolve-check fix for
+  the dot-less `reduceIte` and a stale form-E test expectation).
+  Bare simp is extinct in emitted tactic text outside the legacy
+  `tactus_auto` discover-mode path.
 
 ## Writeup
