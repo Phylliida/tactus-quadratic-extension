@@ -3,7 +3,7 @@ title: "full-Lean discharge of the trait corpus — blocked on tactus lean-all-p
 status: todo
 claimed_by:
 created: 2026-07-16T23:59:00Z
-updated: 2026-07-20T19:30:00Z
+updated: 2026-07-20T21:00:00Z
 ---
 
 ## Description
@@ -189,5 +189,21 @@ gate definition), and check.sh files updated to make that the standing gate.
   Also landed: infra review resolution — the R2 congrArg pool is
   the workhorse (TACTUS_NONLIN_NO_POOL experiment: 132 obligations
   depend on it), rule + caps now documented at emission site.
+- (2026-07-20 night, named-simp arc) Bare `simp_all` ELIMINATED
+  from the obligation legs (LeafSimpAllOmega + form E split legs) —
+  it was both opaque and version-unstable (default simp set drifts
+  with Mathlib). Every leg simp is now `simp_all only
+  [LEG_SIMP_LEMMAS]` (ite-collapse + a trimmed arithmetic
+  normalizer; no `ofNat_toNat`). Zero semantic delta: 114 verified
+  / 72 errors, byte-identical totals; the coeff_shiftk count
+  difference is budget-edge flake noise (both obligations fail
+  standalone with the baseline artifact too). The wild simp's
+  hidden work decomposed (N3 lesson 29): broadcast-have rewrites
+  fire under `only` regardless; the DEFAULT-SET arithmetic collapse
+  (`mul_zero`, `ofNat_eq_coe`) was the invisible part now made
+  explicit. Remaining bare-simp debt: the two termination sites
+  (`decreasing_by all_goals (simp_all; omega)` in to_lean_fn.rs,
+  `simp [height] <;> omega` in link_discharge.rs) — a dedicated
+  pass.
 
 ## Writeup
